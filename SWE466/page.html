@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/shards.min.css">
+    <link rel="stylesheet" href="css/shards-demo.min.css">
+    <style>
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #dbdbdb;
+        }
+        .content {
+            background-color: rgb(255, 255, 255);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .form-group input[type="submit"] {
+            width: auto;
+            background-color: #5bc0de;
+            border-color: #46b8da;
+            color: white;
+        }
+        .back-button {
+            display: inline-block;
+            background-color: #f0ad4e;
+            border-color: #eea236;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <h2 class="text-center mb-4">Project Management</h2>
+            <div class="d-flex flex-nowrap justify-content-center"> <!-- Row for color selection -->
+                
+                <button class="btn btn-primary btn-pill  m-2" onclick="addTask()">Add a Task</button>
+                <button class="btn btn-primary btn-pill  m-2" onclick="addResource()">Add a Resource</button>
+                <button class="btn btn-primary btn-pill  m-2" onclick="assignResource()">Assign a Resource</button>
+                <button class="btn btn-primary btn-pill  m-2" onclick="viewTasks()">View all Tasks</button>
+                <button class="btn btn-primary btn-pill  m-2" onclick="viewResources()">View all Resources</button>
+                <button class="btn btn-primary btn-pill  m-2" onclick="viewTasksResources()">View all Tasks and Resources</button>
+                <button class="btn btn-primary btn-pill m-2" onclick="viewTaskCost()">View Task Costs</button>
+                <button class="btn btn-primary btn-pill m-2" onclick="viewProjectCost()">View Project Cost</button>
+            
+                
+            </div>
+
+          </div>
+        </div>
+      </div>
+    
+      <div id="content" class="content"></div>
+    
+
+    <!-- JavaScript code -->
+    <script>
+          // A list of tasks
+          var tasks = [];
+
+// A list of resources
+var resources = [];
+
+// A map of task id to resource ids
+var taskResources = {};
+
+// A function to add a new task
+function addTask() {
+    // Get the content div
+    var content = document.getElementById("content");
+
+    // Clear the content div
+    content.innerHTML = "";
+
+    // Create a form to enter the task details
+    var form = document.createElement("form");
+    form.setAttribute("id", "taskForm");
+    form.style.margin = "0 auto"; // Center the form horizontally
+    form.style.width = "50%"; // Set the width of the form
+    form.style.border = "1px solid #ccc"; // Add border to form
+    form.style.padding = "20px"; // Add padding to form
+
+    // Style for labels
+    var labelStyle = "display: inline-block; width: 30%; text-align: left; margin-right: 5%;";
+
+    // Style for inputs
+    var inputStyle = "display: inline-block; width: 60%;";
+
+    // Create a label and an input for the task name
+    var nameLabel = document.createElement("label");
+    nameLabel.innerHTML = "Task name: ";
+    nameLabel.classList.add("col-form-label");
+    nameLabel.setAttribute("style", labelStyle); // Apply label style
+    var nameInput = document.createElement("input");
+    nameInput.setAttribute("type", "text");
+    nameInput.setAttribute("name", "taskName");
+    nameInput.setAttribute("required", true);
+    nameInput.classList.add("form-control");
+    nameInput.setAttribute("style", inputStyle); // Apply input style
+
+    // Create a label and an input for the start date
+    var startDateLabel = document.createElement("label");
+    startDateLabel.innerHTML = "Start date: ";
+    startDateLabel.setAttribute("style", labelStyle); // Apply label style
+    var startDateInput = document.createElement("input");
+    startDateInput.setAttribute("type", "date");
+    startDateInput.setAttribute("name", "startDate");
+    startDateInput.setAttribute("required", true);
+    startDateInput.setAttribute("style", inputStyle); // Apply input style
+
+    // Create a label and an input for the duration
+    var durationLabel = document.createElement("label");
+    durationLabel.innerHTML = "Duration (days): ";
+    durationLabel.setAttribute("style", labelStyle); // Apply label style
+    var durationInput = document.createElement("input");
+    durationInput.setAttribute("type", "number");
+    durationInput.setAttribute("name", "duration");
+    durationInput.setAttribute("min", 1);
+    durationInput.setAttribute("required", true);
+    durationInput.setAttribute("style", inputStyle); // Apply input style
+
+    // Create a submit button
+    var submitButton = document.createElement("input");
+    submitButton.setAttribute("type", "submit");
+    submitButton.setAttribute("value", "Add");
+    submitButton.classList.add("btn-outline-primary");
+
+    // Append the elements to the form
+    form.appendChild(nameLabel);
+    form.appendChild(nameInput);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(startDateLabel);
+    form.appendChild(startDateInput);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(durationLabel);
+    form.appendChild(durationInput);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(submitButton);
+
+    // Add an event listener to the form submission
+    form.addEventListener("submit", function(event) {
+        // Prevent the default action of reloading the page
+        event.preventDefault();
+
+        // Get the form data
+        var formData = new FormData(form);
+
+        // Get the task name, start date and duration from the form data
+        var taskName = formData.get("taskName");
+        var startDate = formData.get("startDate");
+        var duration = formData.get("duration");
+
+        // Calculate the finish date by adding the duration to the start date
+        var finishDate = new Date(startDate);
+        finishDate.setDate(finishDate.getDate() + parseInt(duration));
+
+        // Generate a unique id for the task
+        var taskId = tasks.length + 1;
+
+        // Create a task object with the id, name, start date, finish date and duration
+        var task = {
+            id: taskId,
+            name: taskName,
+            startDate: startDate,
+            finishDate: finishDate.toISOString().slice(0, 10),
+            duration: duration
+        };
+
+        // Add the task to the tasks list
+        tasks.push(task);
+
+        // Initialize an empty list of resource ids for this task in the taskResources map
+        taskResources[taskId] = [];
+
+        // Alert the user that the task has been added
+        alert(`Task ${taskName} has been added with id ${taskId}`);
+
+        // Clear the content div
+        content.innerHTML = "";
+
+        // Add a back button to go back to the home page
+        addBackButton();
+    });
+
+    // Append the form to the content div
+    content.appendChild(form);
+}
+
+
+// A function to add a new resource
+function addResource() {
+    var content = document.getElementById("content");
+    content.innerHTML = "";
+
+    var form = document.createElement("form");
+    form.setAttribute("id", "resourceForm");
+    form.onsubmit = function(event) {
+        event.preventDefault();
+        submitResourceForm();
+    };
+    form.style.margin = "0 auto"; // Center the form horizontally
+    form.style.width = "50%"; // Set the width of the form
+    form.style.border = "1px solid #ccc"; // Add border to form
+    form.style.padding = "20px"; // Add padding to form
+
+    // Style for labels
+    var labelStyle = "display: inline-block; width: 30%; text-align: left; margin-right: 5%;";
+
+    // Style for inputs
+    var inputStyle = "display: inline-block; width: 60%;";
+
+    // Resource Name
+    var nameLabel = document.createElement("label");
+    nameLabel.innerHTML = "Resource Name: ";
+    nameLabel.setAttribute("style", labelStyle); // Apply label style
+    var nameInput = document.createElement("input");
+    nameInput.setAttribute("type", "text");
+    nameInput.setAttribute("name", "resourceName");
+    nameInput.setAttribute("required", true);
+    nameInput.classList.add("form-control");
+    nameInput.setAttribute("style", inputStyle); // Apply input style
+
+    // Type (List) as Dropdown
+    var typeLabel = document.createElement("label");
+    typeLabel.innerHTML = "Type (List): ";
+    typeLabel.setAttribute("style", labelStyle); // Apply label style
+    var typeSelect = document.createElement("select");
+    typeSelect.setAttribute("name", "resourceType");
+    typeSelect.setAttribute("required", true);
+    typeSelect.setAttribute("style", inputStyle); // Apply input style
+    var options = ["Work", "Material", "Cost"];
+    options.forEach(function(optionText) {
+        var option = document.createElement("option");
+        option.value = optionText;
+        option.text = optionText;
+        typeSelect.appendChild(option);
+    });
+
+    // Max (No. of Resource)
+    var maxLabel = document.createElement("label");
+    maxLabel.innerHTML = "Max (No. of Resource): ";
+    maxLabel.setAttribute("style", labelStyle); // Apply label style
+    var maxInput = document.createElement("input");
+    maxInput.setAttribute("type", "number");
+    maxInput.setAttribute("name", "resourceMax");
+    maxInput.setAttribute("style", inputStyle); // Apply input style
+    
+    // St.Rate
+    var rateLabel = document.createElement("label");
+    rateLabel.innerHTML = "St.Rate: ";
+    rateLabel.setAttribute("style", labelStyle); // Apply label style
+    var rateInput = document.createElement("input");
+    rateInput.setAttribute("type", "number");
+    rateInput.setAttribute("name", "resourceRate");
+    rateInput.setAttribute("style", inputStyle); // Apply input style
+
+    // Cost/Use
+    var costLabel = document.createElement("label");
+    costLabel.innerHTML = "Cost/Use: ";
+    costLabel.setAttribute("style", labelStyle); // Apply label style
+    var costInput = document.createElement("input");
+    costInput.setAttribute("type", "text");
+    costInput.setAttribute("name", "resourceCost");
+    costInput.setAttribute("style", inputStyle); // Apply input style
+
+    // Submit Button
+    var submitButton = document.createElement("input");
+    submitButton.setAttribute("type", "submit");
+    submitButton.setAttribute("value", "Add Resource");
+    submitButton.classList.add("btn-outline-primary");
+
+    // Append all elements to the form
+    form.appendChild(nameLabel);
+    form.appendChild(nameInput);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(typeLabel);
+    form.appendChild(typeSelect);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(maxLabel);
+    form.appendChild(maxInput);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(rateLabel);
+    form.appendChild(rateInput);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(costLabel);
+    form.appendChild(costInput);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(submitButton);
+
+    // Append the form to the content div
+    content.appendChild(form);
+}
+
+
+
+function submitResourceForm() {
+    var form = document.getElementById("resourceForm");
+
+    // Get the values from the form
+    var resourceName = form.elements["resourceName"].value;
+    var resourceType = form.elements["resourceType"].value;
+    var resourceMax = form.elements["resourceMax"].value;
+    var resourceRate = form.elements["resourceRate"].value;
+    var resourceCost = form.elements["resourceCost"].value;
+
+    // Create a resource object with the form values
+    var newResource = {
+        id: resources.length + 1, // Assuming id is auto-incremented
+        name: resourceName,
+        list: resourceType, // Make sure 'list' matches the property used in viewResources
+        maxNo: resourceMax, // Make sure 'maxNo' matches the property used in viewResources
+        stRate: resourceRate, // Make sure 'stRate' matches the property used in viewResources
+        costUse: resourceCost // Make sure 'costUse' matches the property used in viewResources
+    };
+
+    // Add the new resource to the array of resources
+    resources.push(newResource);
+
+    // Call viewResources to update the table with the new resource
+    viewResources();
+
+    // Clear the form after submission or provide feedback to the user
+    form.reset();
+    alert("Resource added successfully!");
+}
+
+// A function to assign a resource to a task
+function assignResource() {
+    // Get the content div
+    var content = document.getElementById("content");
+
+    // Clear the content div
+    content.innerHTML = "";
+
+    // Create a form to enter the task id and the resource id
+    var form = document.createElement("form");
+    form.setAttribute("id", "assignForm");
+    form.style.margin = "0 auto"; // Center the form horizontally
+    form.style.width = "50%"; // Set the width of the form
+    form.style.border = "1px solid #ccc"; // Add border to form
+    form.style.padding = "20px"; // Add padding to form
+
+    // Style for labels
+    var labelStyle = "display: inline-block; width: 30%; text-align: left; margin-right: 5%;";
+
+    // Style for inputs
+    var inputStyle = "display: inline-block; width: 60%;";
+
+    // Create a label and an input for the task id
+    var taskIdLabel = document.createElement("label");
+    taskIdLabel.innerHTML = "Task id: ";
+    var taskIdInput = document.createElement("input");
+    taskIdInput.setAttribute("type", "number");
+    taskIdInput.setAttribute("name", "taskId");
+    taskIdInput.setAttribute("min", 1);
+    taskIdInput.setAttribute("max", tasks.length);
+    taskIdInput.setAttribute("required", true);
+    taskIdLabel.setAttribute("style", labelStyle); // Apply label style
+    taskIdInput.setAttribute("style", inputStyle); // Apply input style
+
+    // Create a label and a select for the resource id
+    var resourceIdLabel = document.createElement("label");
+    resourceIdLabel.innerHTML = "Resource id: ";
+    var resourceIdSelect = document.createElement("select");
+    resourceIdSelect.setAttribute("name", "resourceId");
+    resourceIdSelect.setAttribute("required", true);
+    resourceIdLabel.setAttribute("style", labelStyle); // Apply label style
+    resourceIdSelect.setAttribute("style", inputStyle); // Apply input style
+
+    // Loop through the resources list and create an option for each resource id and name
+    for (var i = 0; i < resources.length; i++) {
+        var resource = resources[i];
+        var option = document.createElement("option");
+        option.setAttribute("value", resource.id);
+        option.innerHTML = `${resource.id} - ${resource.name}`;
+        resourceIdSelect.appendChild(option);
+    }
+
+    // Create a submit button
+    var submitButton = document.createElement("input");
+    submitButton.setAttribute("type", "submit");
+    submitButton.setAttribute("value", "Assign");
+    submitButton.classList.add("btn-outline-primary");
+
+    // Add an event listener to the form submission
+    form.addEventListener("submit", function(event) {
+        // Prevent the default action of reloading the page
+        event.preventDefault();
+
+        // Get the form data
+        var formData = new FormData(form);
+
+        // Get the task id and the resource id from the form data
+        var taskId = formData.get("taskId");
+        var resourceId = formData.get("resourceId");
+
+        // Check if the task id and the resource id are valid
+        if (taskId > 0 && taskId <= tasks.length && resourceId > 0 && resourceId <= resources.length) {
+            // Check if the resource is already assigned to the task
+            if (taskResources[taskId].includes(resourceId)) {
+                // Alert the user that the resource is already assigned
+                alert(`Resource ${resourceId} is already assigned to task ${taskId}`);
+            } else {
+                // Add the resource id to the list of resource ids for this task in the taskResources map
+                taskResources[taskId].push(resourceId);
+
+                // Alert the user that the resource has been assigned
+                alert(`Resource ${resourceId} has been assigned to task ${taskId}`);
+            }
+        } else {
+            // Alert the user that the task id or the resource id is invalid
+            alert(`Invalid task id or resource id`);
+        }
+
+        // Clear the content div
+        content.innerHTML = "";
+
+        // Add a back button to go back to the home page
+        addBackButton();
+    });
+
+    // Append the elements to the form
+    form.appendChild(taskIdLabel);
+    form.appendChild(taskIdInput);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(resourceIdLabel);
+    form.appendChild(resourceIdSelect);
+    form.appendChild(document.createElement("br"));
+    form.appendChild(submitButton);
+
+    // Append the form to the content div
+    content.appendChild(form);
+}
+
+
+// A function to view all the tasks in a tabular form
+function viewTasks() {
+// Get the content div
+var content = document.getElementById("content");
+
+// Clear the content div
+content.innerHTML = "";
+
+// Create a table element
+var table = document.createElement("table");
+
+// Create a table header row with four columns: id, name, start date, finish date
+var headerRow = document.createElement("tr");
+var idHeader = document.createElement("th");
+idHeader.innerHTML = "Id";
+var nameHeader = document.createElement("th");
+nameHeader.innerHTML = "Name";
+var startDateHeader = document.createElement("th");
+startDateHeader.innerHTML = "Start date";
+var finishDateHeader = document.createElement("th");
+finishDateHeader.innerHTML = "Finish date";
+var durationHeader = document.createElement("th");
+durationHeader.innerHTML = "Duration" ;
+
+// Append the header cells to the header row
+headerRow.appendChild(idHeader);
+headerRow.appendChild(nameHeader);
+headerRow.appendChild(startDateHeader);
+    headerRow.appendChild(finishDateHeader);
+headerRow.appendChild(durationHeader) ;
+
+    // Append the header row to the table
+    table.appendChild(headerRow);
+
+    // Loop through the tasks list and create a table row for each task with its id, name, start date and finish date
+    for (var i = 0; i < tasks.length; i++) {
+        var task = tasks[i];
+        var row = document.createElement("tr");
+        var idCell = document.createElement("td");
+        idCell.innerHTML = task.id;
+        var nameCell = document.createElement("td");
+        nameCell.innerHTML = task.name;
+        var startDateCell = document.createElement("td");
+        startDateCell.innerHTML = task.startDate;
+        var finishDateCell = document.createElement("td");
+        finishDateCell.innerHTML = task.finishDate;
+        var durationDatacell = document.createElement("td");
+        durationDatacell.innerHTML = task.duration;
+
+        // Append the cells to the row
+        row.appendChild(idCell);
+        row.appendChild(nameCell);
+        row.appendChild(startDateCell);
+        row.appendChild(finishDateCell);
+        row.appendChild(durationDatacell) ;
+
+
+        // Append the row to the table
+        table.appendChild(row);
+    }
+
+    // Append the table to the content div
+    content.appendChild(table);
+
+    // Add a back button to go back to the home page
+    addBackButton();
+}
+
+// A function to view all the resources in a tabular form
+function viewResources() {
+    var content = document.getElementById("content");
+    content.innerHTML = "";
+
+    var table = document.createElement("table");
+    table.className = "styled-table"; // Add a class for styling
+
+    // Create a table header row with new columns
+    var headerRow = document.createElement("tr");
+    var headers = ["Id", "Resource Name", "Type (List)", "Max (No. of Resource)", "St.Rate", "Cost/Use"];
+    headers.forEach(headerText => {
+        var header = document.createElement("th");
+        header.innerHTML = headerText;
+        headerRow.appendChild(header);
+    });
+    table.appendChild(headerRow);
+
+    // Table rows for resources
+    resources.forEach(resource => {
+        var row = document.createElement("tr");
+        var idCell = document.createElement("td");
+        idCell.innerHTML = resource.id;
+        var nameCell = document.createElement("td");
+        nameCell.innerHTML = resource.name;
+        var listCell = document.createElement("td");
+        listCell.innerHTML = resource.list;
+        var maxNoCell = document.createElement("td");
+        maxNoCell.innerHTML = resource.maxNo; // You need to add this property to your resources
+        var stRateCell = document.createElement("td");
+        stRateCell.innerHTML = resource.stRate; // You need to add this property to your resources
+        var costUseCell = document.createElement("td");
+        costUseCell.innerHTML = resource.costUse; // You need to add this property to your resources
+        row.appendChild(idCell);
+        row.appendChild(nameCell);
+        row.appendChild(listCell);
+        row.appendChild(maxNoCell);
+        row.appendChild(stRateCell);
+        row.appendChild(costUseCell);
+        table.appendChild(row);
+    });
+
+    content.appendChild(table);
+    addBackButton();
+}
+
+// A function to view all the tasks and resources grouped by task in a tabular form
+function viewTasksResources() {
+    // Get the content div
+    var content = document.getElementById("content");
+
+    // Clear the content div
+    content.innerHTML = "";
+
+    // Create a table element
+    var table = document.createElement("table");
+
+    // Create a table header row with three columns: task id, task name, resource ids
+    var headerRow = document.createElement("tr");
+    var taskIdHeader = document.createElement("th");
+    taskIdHeader.innerHTML = "Task id";
+    var taskNameHeader = document.createElement("th");
+    taskNameHeader.innerHTML = "Task name";
+    var startDateHeader = document.createElement("th");
+startDateHeader.innerHTML = "Start date";
+var finishDateHeader = document.createElement("th");
+finishDateHeader.innerHTML = "Finish date";
+var durationHeader = document.createElement("th");
+durationHeader.innerHTML = "Duration" ;
+    var resourceIdsHeader = document.createElement("th");
+    resourceIdsHeader.innerHTML = "Resource ids";
+
+    // Append the header cells to the header row
+    headerRow.appendChild(taskIdHeader);
+    headerRow.appendChild(taskNameHeader);
+    headerRow.appendChild(startDateHeader);
+    headerRow.appendChild(finishDateHeader);
+headerRow.appendChild(durationHeader) ;
+headerRow.appendChild(resourceIdsHeader);
+
+    // Append the header row to the table
+    table.appendChild(headerRow);
+
+    // Loop through the tasks list and create a table row for each task with its id, name and resource ids
+    for (var i = 0; i < tasks.length; i++) {
+        var task = tasks[i];
+        var row = document.createElement("tr");
+        var taskIdCell = document.createElement("td");
+        taskIdCell.innerHTML = task.id;
+        var taskNameCell = document.createElement("td");
+        taskNameCell.innerHTML = task.name;
+        var resourceIdsCell = document.createElement("td");
+        var startDateCell = document.createElement("td");
+        startDateCell.innerHTML = task.startDate;
+        var finishDateCell = document.createElement("td");
+        finishDateCell.innerHTML = task.finishDate;
+        var durationDatacell = document.createElement("td");
+        durationDatacell.innerHTML = task.duration;
+
+        // Get the list of resource ids for this task from the taskResources map
+        var resourceIds = taskResources[task.id];
+
+        // Check if the list is not empty
+        if (resourceIds.length > 0) {
+            // Join the resource ids with commas and append them to the cell
+            resourceIdsCell.innerHTML = resourceIds.join(", ");
+        } else {
+            // Append a dash to indicate no resources assigned
+            resourceIdsCell.innerHTML = "-";
+        }
+
+        // Append the cells to the row
+        row.appendChild(taskIdCell);
+        row.appendChild(taskNameCell);
+        row.appendChild(startDateCell);
+        row.appendChild(finishDateCell);
+        row.appendChild(durationDatacell) ;
+        row.appendChild(resourceIdsCell);
+
+        // Append the row to the table
+        table.appendChild(row);
+    }
+
+    // Append the table to the content div
+    content.appendChild(table);
+
+    // Add a back button to go back to the home page
+    addBackButton();
+}
+function calculateTotalCostForResourceIds(resourceIds) {
+  return resourceIds.reduce((total, id) => {
+    const resource = resources.find(r => r.id === id);
+    if (resource && !isNaN(parseFloat(resource.costUse))) {
+      return total + parseFloat(resource.costUse);
+    } else {
+      console.error('Invalid cost for resource with ID: ${id}');
+      return total;
+    }
+  }, 0);
+}
+
+// A function to view the total cost for each task in a tabular form
+function viewTaskCost() {
+    // Get the content div
+    var content = document.getElementById("content");
+
+    // Clear the content div
+    content.innerHTML = "";
+
+    // Create a table element
+    var table = document.createElement("table");
+
+    // Create a table header row with three columns: task id, task name, total cost
+    var headerRow = document.createElement("tr");
+    var taskIdHeader = document.createElement("th");
+    taskIdHeader.innerHTML = "Task id";
+    var taskNameHeader = document.createElement("th");
+    taskNameHeader.innerHTML = "Task name";
+    var startDateHeader = document.createElement("th");
+startDateHeader.innerHTML = "Start date";
+var finishDateHeader = document.createElement("th");
+finishDateHeader.innerHTML = "Finish date";
+var durationHeader = document.createElement("th");
+durationHeader.innerHTML = "Duration" ;
+    var totalCostHeader = document.createElement("th");
+    totalCostHeader.innerHTML = "Total cost";
+
+    // Append the header cells to the header row
+    headerRow.appendChild(taskIdHeader);
+    headerRow.appendChild(taskNameHeader);
+    headerRow.appendChild(startDateHeader);
+    headerRow.appendChild(finishDateHeader);
+headerRow.appendChild(durationHeader) ;
+    headerRow.appendChild(totalCostHeader);
+
+    // Append the header row to the table
+    table.appendChild(headerRow);
+
+    // Loop through the tasks list and create a table row for each task with its id, name and total cost
+    for (var i = 0; i < tasks.length; i++) {
+        var task = tasks[i];
+        var row = document.createElement("tr");
+        var taskIdCell = document.createElement("td");
+        taskIdCell.innerHTML = task.id;
+        var taskNameCell = document.createElement("td");
+        taskNameCell.innerHTML = task.name;
+        var startDateCell = document.createElement("td");
+        startDateCell.innerHTML = task.startDate;
+        var finishDateCell = document.createElement("td");
+        finishDateCell.innerHTML = task.finishDate;
+        var durationDatacell = document.createElement("td");
+        durationDatacell.innerHTML = task.duration;
+        var totalCostCell = document.createElement("td");
+
+        // Get the list of resource ids for this task from the taskResources map
+        var resourceIds = taskResources[task.id];
+
+        // Initialize a variable to store the total cost for this task
+var totalCost = 0;
+
+// Loop through the resource ids and calculate the cost for each resource
+for (var j = 0; j < resourceIds.length; j++) {
+var resourceId = resourceIds[j];
+
+// Get the resource object from the resources list by its id
+var resource = resources[resourceId - 1];
+
+// Check if the resource list is Work
+if (resource.list == "Work") {
+// Multiply the resource rate by the task duration and add it to the total cost
+totalCost += parseFloat(resource.stRate) * parseFloat(task.duration);
+} else {
+// Add the resource rate to the total cost
+totalCost += parseFloat(resource.costUse);
+}
+}
+
+// Convert totalCost to an integer
+var totalCostInt = parseInt(totalCost);
+
+// Append the total cost (as an integer) to the cell
+totalCostCell.innerHTML = totalCostInt;
+
+
+        // Append the cells to the row
+        row.appendChild(taskIdCell);
+        row.appendChild(taskNameCell);
+        row.appendChild(startDateCell);
+        row.appendChild(finishDateCell);
+        row.appendChild(durationDatacell) ;
+        row.appendChild(totalCostCell);
+
+        // Append the row to the table
+        table.appendChild(row);
+    }
+
+    // Append the table to the content div
+    content.appendChild(table);
+
+    // Add a back button to go back to the home page
+    addBackButton();
+}
+
+// A function to view the total cost for the whole project
+// ... (other parts of the code)
+
+// A function to view the total cost for the whole project
+// A function to view the total cost for the whole project
+// ... (other parts of your code)
+
+// A function to view the total cost for the whole project
+function viewProjectCost() {
+  var content = document.getElementById('content');
+  content.innerHTML = '';
+
+  var table = document.createElement('table');
+  table.className = 'styled-table';
+
+  // Add table headers
+  var headers = ['Task ID', 'Task Name', 'Duration', 'Start (Date)', 'Finish (Date)', 'Resource Name', 'Total Cost'];
+  var headerRow = document.createElement('tr');
+  headers.forEach(text => {
+    var th = document.createElement('th');
+    th.textContent = text;
+    headerRow.appendChild(th);
+  });
+  table.appendChild(headerRow);
+
+  var grandTotalCost = 0; // This will hold the sum of all tasks' costs.
+
+  tasks.forEach(task => {
+    var taskCost = 0;
+    var resourceNames = [];
+    var taskResourceIds = taskResources[task.id] || [];
+
+    taskResourceIds.forEach(resourceId => {
+      var resource = resources.find(r => r.id == resourceId);
+      if (resource) {
+        // Check the type of the resource and calculate the cost accordingly
+        if (resource.list === 'Work') {
+          // For 'Work' type resources, multiply the rate by the task's duration
+          var cost = parseFloat(resource.stRate) * parseInt(task.duration, 10);
+          taskCost += !isNaN(cost) ? cost : 0;
+        } else {
+          // For other types, just add the cost
+          var cost = parseFloat(resource.costUse);
+          taskCost += !isNaN(cost) ? cost : 0;
+        }
+        resourceNames.push(resource.name); // Collect resource names for display
+      }
+    });
+
+    grandTotalCost += taskCost; // Add the task cost to the grand total cost.
+
+    // Create and append the table row for this task.
+    var row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${task.id}</td>
+      <td>${task.name}</td>
+      <td>${task.duration}</td>
+      <td>${task.startDate}</td>
+      <td>${task.finishDate}</td>
+      <td>${resourceNames.join(', ')}</td>
+      <td>${taskCost.toFixed(2)}</td>
+    `;
+    table.appendChild(row);
+  });
+
+  // Add a row for the grand total cost
+  var totalRow = document.createElement('tr');
+  totalRow.innerHTML = `
+    <td colspan="6" style="text-align: right;"><strong>Total Cost</strong></td>
+    <td><strong>${grandTotalCost.toFixed(2)}</strong></td>
+  `;
+  table.appendChild(totalRow);
+
+  content.appendChild(table);
+}
+
+// ... (rest of the code)
+
+// ... (rest of the code)
+
+
+// A function to add a back button to go back to the home page
+function addBackButton() {
+    // Get the content div
+    var content = document.getElementById("content");
+
+    // Create a button element
+    var backButton = document.createElement("button");
+    backButton.innerHTML = "Back";
+    backButton.classList.add("btn-outline-primary");
+    // Add an event listener to the button click
+    backButton.addEventListener("click", function() {
+        // Reload the page
+        location.reload();
+    });
+
+    // Append the button to the content div
+    content.appendChild(backButton);
+}
+    </script>
+</body>
+</html>
